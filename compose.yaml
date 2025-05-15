@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: ./php/Dockerfile
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    ports:
+      - '80:80'
+    depends_on:
+      - app
