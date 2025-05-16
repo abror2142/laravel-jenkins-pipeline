@@ -1,7 +1,6 @@
 pipeline {
   agent {
-      label 'mac'  
-    }
+    label 'mac'
   }
   stages {
     stage('Checkout') {
@@ -10,13 +9,14 @@ pipeline {
       }
     }
 
-  stage('Test backend') {
-    steps {
-      sh '''
-        cd app
-        /opt/homebrew/bin/composer require
-        php artisan test
-      '''
+    stage('Test backend') {
+      steps {
+        sh '''
+          cd app
+          /opt/homebrew/bin/composer require
+          php artisan test
+        '''
+      }
     }
   }
 }
