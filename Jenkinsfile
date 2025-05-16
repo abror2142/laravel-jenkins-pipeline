@@ -7,9 +7,9 @@ pipeline {
       }
     }
 
-    stage('List') {
+    stage('Test backend') {
       steps {
-        sh 'ls -la'
+        sh 'ls app'
       }
     }
 
