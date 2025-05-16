@@ -11,7 +11,8 @@ pipeline {
       steps {
         sh 'ls app'
         sh '''composer require
-php artisan test'''
+'''
+        sh 'php artisan test'
       }
     }
 
