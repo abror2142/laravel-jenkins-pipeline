@@ -1,8 +1,6 @@
 pipeline {
   agent {
-    docker {
-      image 'composer:2'
-      args  '-u root'       
+      label 'mac'  
     }
   }
   stages {
@@ -14,10 +12,11 @@ pipeline {
 
     stage('Test backend') {
       steps {
-        sh 'ls app'
-        sh 'cd app'
-        sh 'composer require'
-        sh 'php artisan test'
+        sh '''
+          cd app
+          /opt/homebrew/bin/composer require
+          php artisan test
+        '''
       }
     }
 
