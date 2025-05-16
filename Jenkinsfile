@@ -14,7 +14,7 @@ pipeline {
         sh '''
           
           cd app
-          /opt/homebrew/bin/composer require
+          composer require
           mv ./.env.example ./.env
           php artisan key:generate
           php artisan test
