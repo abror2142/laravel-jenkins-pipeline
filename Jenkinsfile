@@ -12,9 +12,10 @@ pipeline {
     stage('Test backend') {
       steps {
         sh '''
-          ls -a
+          
           cd app
           /opt/homebrew/bin/composer require
+          php artisan key:generate
           php artisan test
         '''
       }
