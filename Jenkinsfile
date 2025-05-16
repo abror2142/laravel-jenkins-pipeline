@@ -14,6 +14,7 @@ pipeline {
         sh '''
           
           cd app
+          php artisan key:generate
           /opt/homebrew/bin/composer require
           php artisan key:generate
           php artisan test
