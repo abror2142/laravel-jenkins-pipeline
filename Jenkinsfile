@@ -10,6 +10,8 @@ pipeline {
     stage('Test backend') {
       steps {
         sh 'ls app'
+        sh '''composer require
+php artisan test'''
       }
     }
 
