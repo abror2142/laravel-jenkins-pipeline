@@ -48,5 +48,11 @@ php artisan test'''
       }
     }
 
+    stage('DokerHub') {
+      steps {
+        sh 'docker login '
+      }
+    }
+
   }
 }
