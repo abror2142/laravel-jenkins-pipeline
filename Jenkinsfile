@@ -14,18 +14,21 @@ pipeline {
         stage('Backend environment') {
           steps {
             sh '''
-          cd app
-          mv .env.example .env
-          composer require
-          php artisan key:generate'''
+              cd app
+              mv .env.example .env
+              composer require
+              php artisan key:generate
+            '''
           }
         }
 
         stage('Build Frontend assets') {
           steps {
-            sh '''cd app
-npm ci
-npm run build'''
+            sh '''
+              cd app
+              npm ci
+              npm run build
+            '''
           }
         }
 
@@ -34,17 +37,35 @@ npm run build'''
 
     stage('Preparing database') {
       steps {
-        sh '''cd app
-mkdir -p database
-touch database/database.sqlite
-php artisan migrate:fresh --seed'''
+        sh '''
+          cd app
+          mkdir -p database
+          touch database/database.sqlite
+          php artisan migrate:fresh --seed
+        '''
       }
     }
 
     stage('Test') {
       steps {
-        sh '''cd app
-php artisan test'''
+        sh '''
+          cd app
+          php artisan test
+        '''
+      }
+    }
+    stage('Docker Login') {
+      steps {
+        withCredentials([usernamePassword(
+          credentialsId: 'docker-hub-pat',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          // Use --password-stdin to avoid needing a TTY
+          sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+          '''
+        }
       }
     }
 
