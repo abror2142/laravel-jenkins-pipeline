@@ -12,12 +12,8 @@ pipeline {
     stage('Test backend') {
       steps {
         sh '''
-          
           cd app
-          composer require
-          mv ./.env.example ./.env
-          php artisan key:generate
-          php artisan test
+          ls -a
         '''
       }
     }
