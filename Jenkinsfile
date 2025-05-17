@@ -19,5 +19,12 @@ pipeline {
       }
     }
 
+    stage('Testing app') {
+      steps {
+        sh '''cd app
+php artisan test'''
+      }
+    }
+
   }
 }
