@@ -2,6 +2,14 @@ pipeline {
   agent {
     label 'mac'
   }
+  
+  environment {
+    // Change to your Docker Hub namespace/image
+    IMAGE_NAME = 'abror2142/my-repo'
+    // Derive a unique tag per build
+    IMAGE_TAG  = "${env.BUILD_NUMBER}"
+  }
+
   stages {
     stage('Checkout') {
       steps {
