@@ -2,14 +2,6 @@ pipeline {
   agent {
     label 'mac'
   }
-  
-  environment {
-    // Change to your Docker Hub namespace/image
-    IMAGE_NAME = 'abror2142/my-repo'
-    // Derive a unique tag per build
-    IMAGE_TAG  = "${env.BUILD_NUMBER}"
-  }
-
   stages {
     stage('Checkout') {
       steps {
@@ -65,33 +57,38 @@ pipeline {
 
     stage('Docker Login') {
       steps {
-        withCredentials([usernamePassword(
-          credentialsId: 'docker-hub-pat',
-          usernameVariable: 'DOCKER_USER',
-          passwordVariable: 'DOCKER_PASS'
-        )]) {
-          // Use --password-stdin to avoid needing a TTY
-          sh '''
+        withCredentials(bindings: [usernamePassword(
+                    credentialsId: 'docker-hub-pat',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                  )]) {
+            sh '''
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
           '''
+          }
+
         }
       }
-    }
 
-    stage('Docker build') {
-      steps {
-        sh '''
+      stage('Docker build') {
+        steps {
+          sh '''
           docker build -f app/Dockerfile . -t abror2142/my-repo:latest
         '''
+        }
       }
-    }
 
-    stage('Docker push') {
-      steps {
-        sh '''
+      stage('Docker push') {
+        steps {
+          sh '''
           docker push abror2142/my-repo:latest
         '''
+        }
       }
+
+    }
+    environment {
+      IMAGE_NAME = 'abror2142/my-repo'
+      IMAGE_TAG = "${env.BUILD_NUMBER}"
     }
   }
-}
