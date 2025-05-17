@@ -19,7 +19,14 @@ pipeline {
       }
     }
 
-    stage('Testing app') {
+    stage('Preparing database') {
+      steps {
+        sh '''cd app
+php artisan migrate:fresh --seed'''
+      }
+    }
+
+    stage('Test') {
       steps {
         sh '''cd app
 php artisan test'''
