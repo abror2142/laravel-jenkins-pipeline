@@ -65,18 +65,33 @@ pipeline {
 
     stage('Docker Login') {
       steps {
-        withCredentials(bindings: [usernamePassword(
-                    credentialsId: 'docker-hub-pat',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
-                  )]) {
-            sh '''
+        withCredentials([usernamePassword(
+          credentialsId: 'docker-hub-pat',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          // Use --password-stdin to avoid needing a TTY
+          sh '''
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
           '''
-          }
-
         }
       }
+    }
 
+    stage('Docker build') {
+      steps {
+        sh '''
+          docker build -f app/Dockerfile . -t abror2142/my-repo:latest
+        '''
+      }
+    }
+
+    stage('Docker push') {
+      steps {
+        sh '''
+          docker push abror2142/my-repo:latest
+        '''
+      }
     }
   }
+}
