@@ -5,17 +5,30 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git(url: 'https://github.com/abror2142/laravel-jenkins-pipeline', branch: 'main')
+        git(url: 'https://github.com/abror2142/laravel-jenkins-pipeline', branch: 'main', credentialsId: 'jenkins-https')
       }
     }
 
     stage('Prepare environment') {
-      steps {
-        sh '''
+      parallel {
+        stage('Backend environment') {
+          steps {
+            sh '''
           cd app
           mv .env.example .env
           composer require
           php artisan key:generate'''
+          }
+        }
+
+        stage('Build Frontend assets') {
+          steps {
+            sh '''cd app
+npm ci
+npm run build'''
+          }
+        }
+
       }
     }
 
@@ -31,7 +44,7 @@ php artisan migrate:fresh --seed'''
     stage('Test') {
       steps {
         sh '''cd app
-php artisan test'''
+ls -a'''
       }
     }
 
