@@ -9,12 +9,13 @@ pipeline {
       }
     }
 
-    stage('Test backend') {
+    stage('Prepare environment') {
       steps {
         sh '''
           cd app
-          ls -a
-           composer require'''
+          mv .env.example .env
+          composer require
+          php artisan key:generate'''
       }
     }
 
