@@ -22,6 +22,8 @@ pipeline {
     stage('Preparing database') {
       steps {
         sh '''cd app
+mkdir -p database
+touch database/database.sqlite
 php artisan migrate:fresh --seed'''
       }
     }
