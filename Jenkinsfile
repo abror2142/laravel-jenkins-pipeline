@@ -44,7 +44,7 @@ php artisan migrate:fresh --seed'''
     stage('Test') {
       steps {
         sh '''cd app
-ls -a'''
+php artisan test'''
       }
     }
 
