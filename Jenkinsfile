@@ -14,7 +14,7 @@ pipeline {
         sh '''
           cd app
           ls -a
-        '''
+           composer require'''
       }
     }
 
