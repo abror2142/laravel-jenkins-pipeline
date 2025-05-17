@@ -50,7 +50,7 @@ php artisan test'''
 
     stage('DokerHub') {
       steps {
-        sh 'docker login '
+        sh 'docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD'
       }
     }
 
