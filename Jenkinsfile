@@ -58,10 +58,10 @@ pipeline {
     stage('Docker Login') {
       steps {
         withCredentials(bindings: [usernamePassword(
-                                        credentialsId: 'docker-hub-pat',
-                                        usernameVariable: 'DOCKER_USER',
-                                        passwordVariable: 'DOCKER_PASS'
-                                      )]) {
+                                                  credentialsId: 'docker-hub-pat',
+                                                  usernameVariable: 'DOCKER_USER',
+                                                  passwordVariable: 'DOCKER_PASS'
+                                                )]) {
             sh '''
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
           '''
@@ -73,15 +73,17 @@ pipeline {
       stage('Docker build') {
         steps {
           sh '''
-          sudo docker build -f php/Dockerfile . -t abror2142/my-repo:latest
-        '''
+          sudo docker build -f php/Dockerfile -t abror2142/my-repo:latest .
+
+          sudo docker tag abror2142/my-repo:latest abror2142/my-repo:v1.0.0
+           '''
         }
       }
 
       stage('Docker push') {
         steps {
           sh '''
-          sudo docker push abror2142/my-repo:latest
+          sudo docker push abror2142/my-repo:v1.0.0
         '''
         }
       }
