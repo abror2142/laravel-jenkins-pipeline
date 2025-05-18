@@ -1,7 +1,6 @@
 #!/bin/sh
 set -e
 
-mv .env.example .env
 php artisan key:generate
 
 mkdir -p database
