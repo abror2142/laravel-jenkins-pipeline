@@ -24,10 +24,6 @@ RUN composer install --prefer-dist --no-dev --no-scripts --no-progress --no-inte
 
 COPY ./app .
 
-RUN mkdir -p database
-
-RUN touch database/database.sqlite3
-
 COPY ./php/entrypoint.sh /
 
 ENTRYPOINT [ "sh", "/entrypoint.sh" ]
