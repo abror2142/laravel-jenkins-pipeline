@@ -45,7 +45,7 @@ pipeline {
           sh '''
             mkdir -p database
             touch database/database.sqlite
-            php artisan migrate:fresh --seed --env=testing
+            php artisan migrate:fresh --seed
           '''
         }
 
@@ -55,7 +55,7 @@ pipeline {
     stage('Test') {
       steps {
         dir(path: 'app') {
-          sh 'php artisan test --env=testing'
+          sh 'php artisan test'
         }
 
       }
