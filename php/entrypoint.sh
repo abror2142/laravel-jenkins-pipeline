@@ -1,10 +1,12 @@
 #!/bin/sh
 set -e
 
+mv .env.example .env
+php artisan key:generate
+
 mkdir -p database
 touch ./database/database.sqlite
 
-php artisan key:generate
 php artisan migrate:fresh
 
 chown -R www-data:www-data /app /app/vendor /app/storage
