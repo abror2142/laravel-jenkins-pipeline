@@ -1,17 +1,11 @@
 pipeline {
-  agent { label 'mac' }
-
-  environment {
-    IMAGE      = 'abror2142/my-repo'
-    IMAGE_TAG  = 'latest'
+  agent {
+    label 'mac'
   }
-
   stages {
     stage('Checkout') {
       steps {
-        git url: 'https://github.com/abror2142/laravel-jenkins-pipeline.git',
-            branch: 'main',
-            credentialsId: 'github-pat'
+        git(url: 'https://github.com/abror2142/laravel-jenkins-pipeline.git', branch: 'main', credentialsId: 'github-pat')
       }
     }
 
@@ -19,73 +13,89 @@ pipeline {
       parallel {
         stage('Backend') {
           steps {
-            dir('app') {
+            dir(path: 'app') {
               sh '''
                 cp .env.example .env
                 composer install --no-interaction --prefer-dist
                 php artisan key:generate
               '''
             }
+
           }
         }
+
         stage('Frontend') {
           steps {
-            dir('app') {
+            dir(path: 'app') {
               sh '''
                 npm ci
                 npm run build
               '''
             }
+
           }
         }
+
       }
     }
 
     stage('Database') {
       steps {
-        dir('app') {
+        dir(path: 'app') {
           sh '''
             mkdir -p database
             touch database/database.sqlite
             php artisan migrate:fresh --seed --env=testing
           '''
         }
+
       }
     }
 
     stage('Test') {
       steps {
-        dir('app') {
+        dir(path: 'app') {
           sh 'php artisan test --env=testing --verbose'
         }
+
       }
     }
 
     stage('Docker Build') {
       steps {
-        // no sudo—make sure jenkins user is in docker group
         sh 'docker build -f php/Dockerfile -t $IMAGE:$IMAGE_TAG .'
       }
     }
 
     stage('Docker Push') {
       steps {
-        withCredentials([usernamePassword(
-          credentialsId: 'docker-hub-pat',
-          usernameVariable: 'DOCKER_USER',
-          passwordVariable: 'DOCKER_PASS'
-        )]) {
-          sh '''
+        withCredentials(bindings: [usernamePassword(
+                    credentialsId: 'docker-hub-pat',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                  )]) {
+            sh '''
             echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
             docker push $IMAGE:$IMAGE_TAG
           '''
+          }
+
         }
       }
+
+    }
+    environment {
+      IMAGE = 'abror2142/my-repo'
+      IMAGE_TAG = 'latest'
+    }
+    post {
+      success {
+        echo "✅ Successfully built & pushed $IMAGE:$IMAGE_TAG"
+      }
+
+      failure {
+        echo '❌ Build or push failed'
+      }
+
     }
   }
-
-  post {
-    success { echo "✅ Successfully built & pushed $IMAGE:$IMAGE_TAG" }
-    failure { echo "❌ Build or push failed" }
-  }
-}
