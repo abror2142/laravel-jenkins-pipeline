@@ -63,20 +63,20 @@ pipeline {
 
     stage('Docker Build') {
       steps {
-        sh 'docker build -f php/Dockerfile -t $IMAGE:$IMAGE_TAG .'
+        sh 'sudo docker build -f php/Dockerfile -t $IMAGE:$IMAGE_TAG .'
       }
     }
 
     stage('Docker Push') {
       steps {
         withCredentials(bindings: [usernamePassword(
-                                        credentialsId: 'docker-hub-pat',
-                                        usernameVariable: 'DOCKER_USER',
-                                        passwordVariable: 'DOCKER_PASS'
-                                      )]) {
+                                                  credentialsId: 'docker-hub-pat',
+                                                  usernameVariable: 'DOCKER_USER',
+                                                  passwordVariable: 'DOCKER_PASS'
+                                                )]) {
             sh '''
-            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-            docker push $IMAGE:$IMAGE_TAG
+            echo "$DOCKER_PASS" | sudo docker login -u "$DOCKER_USER" --password-stdin
+            sudo docker push $IMAGE:$IMAGE_TAG
           '''
           }
 
