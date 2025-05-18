@@ -1,97 +1,91 @@
 pipeline {
-  agent {
-    label 'mac'
+  agent { label 'mac' }
+
+  environment {
+    IMAGE      = 'abror2142/my-repo'
+    IMAGE_TAG  = 'latest'
   }
+
   stages {
     stage('Checkout') {
       steps {
-        git(url: 'https://github.com/abror2142/laravel-jenkins-pipeline', branch: 'main', credentialsId: 'github-pat')
+        git url: 'https://github.com/abror2142/laravel-jenkins-pipeline.git',
+            branch: 'main',
+            credentialsId: 'github-pat'
       }
     }
 
     stage('Prepare environment') {
       parallel {
-        stage('Backend environment') {
+        stage('Backend') {
           steps {
-            sh '''
-              cd app
-              mv .env.example .env
-              composer require
-              php artisan key:generate
-            '''
+            dir('app') {
+              sh '''
+                cp .env.example .env
+                composer install --no-interaction --prefer-dist
+                php artisan key:generate
+              '''
+            }
           }
         }
-
-        stage('Build Frontend assets') {
+        stage('Frontend') {
           steps {
-            sh '''
-              cd app
-              npm ci
-              npm run build
-            '''
+            dir('app') {
+              sh '''
+                npm ci
+                npm run build
+              '''
+            }
           }
         }
-
       }
     }
 
-    stage('Preparing database') {
+    stage('Database') {
       steps {
-        sh '''
-          cd app
-          mkdir -p database
-          touch database/database.sqlite
-          php artisan migrate:fresh --seed
-        '''
+        dir('app') {
+          sh '''
+            mkdir -p database
+            touch database/database.sqlite
+            php artisan migrate:fresh --seed --env=testing
+          '''
+        }
       }
     }
 
     stage('Test') {
       steps {
-        sh '''
-          cd app
-          php artisan test
-        '''
+        dir('app') {
+          sh 'php artisan test --env=testing --verbose'
+        }
       }
     }
 
-    stage('Docker Login') {
+    stage('Docker Build') {
       steps {
-        withCredentials(bindings: [usernamePassword(
-                                                                                          credentialsId: 'docker-hub-pat',
-                                                                                          usernameVariable: 'DOCKER_USER',
-                                                                                          passwordVariable: 'DOCKER_PASS'
-                                                                                        )]) {
-            sh '''
-            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-          '''
-          }
-
-        }
+        // no sudo—make sure jenkins user is in docker group
+        sh 'docker build -f php/Dockerfile -t $IMAGE:$IMAGE_TAG .'
       }
-
-      stage('Docker build') {
-        steps {
-          sh '''
-          sudo docker build -f php/Dockerfile -t abror2142/my-repo:latest .
-
-          sudo docker tag abror2142/my-repo:latest abror2142/my-repo:v1.0.0
-           '''
-        }
-      }
-
-      stage('Docker push') {
-        steps {
-          sh '''
-          sudo usermod -aG docker ec2-user
-          sudo docker push abror2142/my-repo:v1.0.0
-        '''
-        }
-      }
-
     }
-    environment {
-      IMAGE_NAME = 'abror2142/my-repo'
-      IMAGE_TAG = "${env.BUILD_NUMBER}"
+
+    stage('Docker Push') {
+      steps {
+        withCredentials([usernamePassword(
+          credentialsId: 'docker-hub-pat',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          sh '''
+            echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+            docker push $IMAGE:$IMAGE_TAG
+          '''
+        }
+      }
     }
   }
+
+  post {
+    success { echo "✅ Successfully built & pushed $IMAGE:$IMAGE_TAG" }
+    failure { echo "❌ Build or push failed" }
+  }
+}
