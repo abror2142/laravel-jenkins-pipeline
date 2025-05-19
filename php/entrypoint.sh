@@ -8,7 +8,10 @@ touch ./database/database.sqlite
 
 php artisan migrate:fresh
 
-chown -R www-data:www-data /app /app/vendor /app/storage
-chmod -R 775 /app /app/vendor /app/storage
+npm install
+npm run build
+
+chown -R www-data:www-data /app /app/vendor /app/storage /app/public
+chmod -R 775 /app /app/vendor /app/storage /app/public
 
 exec php-fpm
